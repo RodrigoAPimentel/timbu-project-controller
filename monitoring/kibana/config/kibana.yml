@@ -1,0 +1,11 @@
+---
+server:
+  name: kibana
+  basePath: /${ELK_KIBANA_URL}
+  host: ${ELK_KIBANA_SIMPLE_HOST}
+
+elasticsearch.hosts: [ "http://${ELK_ELASTICSEARCH_HOST}" ]
+monitoring.ui.container.elasticsearch.enabled: true
+
+elasticsearch.username: elastic
+elasticsearch.password: ${ELK_ELASTICSEARCH_PASSWORD}

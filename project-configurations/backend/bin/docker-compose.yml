@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  backend:
+    build:
+      context: ../
+      dockerfile: bin/Dockerfile
+    image: ${BACKEND_NAME}:${BACKEND_VERSION}
+    container_name: ${BACKEND_NAME}
+    env_file: .env
+    restart: always
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${BACKEND_PORT}']
+      interval: 50s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - '${BACKEND_PORT}:${BACKEND_PORT}'
+    volumes:
+      - ../:/home/node/backend
+    networks:
+      - backend
+
+networks:
+  backend:
+    name: ${PROJECT_NAME}
+    driver: bridge

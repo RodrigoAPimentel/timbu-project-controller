@@ -1,0 +1,111 @@
+version: "3.7"
+
+services:
+  elasticsearch:
+    image: elastic/elasticsearch:${ELK_VERSION}
+    container_name: elasticsearch_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    restart: unless-stopped
+    env_file: .env
+    hostname: elasticsearch_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - elasticsearch:/usr/share/elasticsearch/data
+    ports:
+      - ${ELK_ELASTICSEARCH_PORT1}:${ELK_ELASTICSEARCH_PORT1}
+      - ${ELK_ELASTICSEARCH_PORT2}:${ELK_ELASTICSEARCH_PORT2}
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTIC_PASSWORD: ${ELK_ELASTICSEARCH_PASSWORD}
+    networks:
+      - project-network
+
+  # logstash:
+  #   image: elastic/logstash:${ELK_VERSION}
+  #   container_name: logstash_${PROJECT_NAME}_v.${PROJECT_VERSION}
+  #   restart: unless-stopped
+  #   env_file: .env
+  # hostname: logstash_${PROJECT_NAME}_v.${PROJECT_VERSION}
+  #   volumes:
+  #     - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+  #     - ./logstash/pipeline:/usr/share/logstash/pipeline
+  #   ports:
+  #     - ${ELK_LOGSTASH_PORT1}:${ELK_LOGSTASH_PORT1}
+  #     - ${ELK_LOGSTASH_PORT2}:${ELK_LOGSTASH_PORT2}
+  #     - ${ELK_LOGSTASH_PORT3}:${ELK_LOGSTASH_PORT3}
+  #   environment:
+  #     LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+  #   networks:
+  #     - project-network
+  #   depends_on:
+  #     - elasticsearch
+
+  metricbeat:
+    image: elastic/metricbeat:${ELK_VERSION}
+    container_name: metricbeat_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    restart: unless-stopped
+    env_file: .env
+    hostname: metricbeat_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    user: root
+    logging:
+      options:
+        max-file: "3"
+        max-size: "50m"
+    volumes:
+      - ./metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - ./metricbeat/modules.d/:/usr/share/metricbeat/modules.d/
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /:/hostfs:ro
+    command: metricbeat -e -system.hostfs=/hostfs -strict.perms=false
+    networks:
+      - project-network
+    depends_on:
+      - elasticsearch
+      - kibana
+
+  filebeat:
+    image: elastic/filebeat:${ELK_VERSION}
+    container_name: filebeat_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    restart: unless-stopped
+    env_file: .env
+    hostname: filebeat_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    user: root
+    logging:
+      options:
+        max-file: "3"
+        max-size: "50m"
+    volumes:
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./filebeat/modules.d/:/usr/share/filebeat/modules.d/
+      - /var/lib/docker/containers:/usr/share/dockerlogs/data:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: filebeat -e -strict.perms=false
+    networks:
+      - project-network
+    depends_on:
+      - elasticsearch
+      - kibana
+
+  kibana:
+    image: elastic/kibana:${ELK_VERSION}
+    container_name: kibana_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    env_file: .env
+    hostname: kibana_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - ${ELK_KIBANA_PORT1}:${ELK_KIBANA_PORT1}
+    networks:
+      - project-network
+    depends_on:
+      - elasticsearch
+
+volumes:
+  elasticsearch:
+    name: elasticsearch
+
+networks:
+  project-network:
+    name: ${PROJECT_NAME}
+    driver: bridge

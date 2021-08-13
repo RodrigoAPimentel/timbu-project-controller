@@ -1,0 +1,14 @@
+- module: mongodb
+  metricsets: 
+   - dbstats
+   - status
+   - collstats
+   - metrics
+   - replstatus
+  period: 10s
+  enabled: true
+
+  hosts: ["${MONGO_HOST}"]
+
+  username: ${MONGO_ROOT_USER}
+  password: ${MONGO_ROOT_PASS}

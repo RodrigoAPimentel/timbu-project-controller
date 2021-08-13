@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  mongodb:
+    image: mongo:${MONGO_VERSION}
+    container_name: mongodb_${PROJECT_NAME}_v.${PROJECT_VERSION}
+    restart: unless-stopped
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    volumes:
+      - mongo:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASS}
+    networks:
+      - project-network
+
+volumes:
+  mongo:
+    name: mongo
+
+networks:
+  project-network:
+    name: ${PROJECT_NAME}
+    driver: bridge

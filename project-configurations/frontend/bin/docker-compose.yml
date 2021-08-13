@@ -1,0 +1,22 @@
+version: "3.7"
+
+services:
+  frontend:
+    build:
+      context: ../
+      dockerfile: bin/Dockerfile
+    image: ${REACT_APP_APP_NAME}:${REACT_APP_APP_VERSION}
+    container_name: ${REACT_APP_APP_NAME}
+    env_file: .env
+    restart: always
+    ports:
+      - "${REACT_APP_APP_PORT}:${REACT_APP_APP_PORT}"
+    volumes:
+      - ../:/frontend
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    name: ${REACT_APP_PROJECT_NAME}
+    driver: bridge

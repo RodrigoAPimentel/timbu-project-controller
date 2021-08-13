@@ -1,0 +1,34 @@
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.period: 10s
+  reload.enabled: true
+
+# metricbeat.autodiscover:
+#  providers:
+#    - type: docker
+#      templates:
+#        - condition:
+#            equals.docker.container.image: etcd
+#          config:
+#            - module: etcd
+#              metricsets: ["leader", "self", "store"]
+#              period: 10s
+#              hosts: ["${host}:2379"]
+
+
+output.elasticsearch:
+  hosts: ["${ELK_ELASTICSEARCH_HOST}"]
+  username: elastic
+  password: ${ELK_ELASTICSEARCH_PASSWORD}
+#   index: ${PROJECT_NAME}_v.${PROJECT_VERSION}_%{+dd.MM.yyyy}
+# setup.template.enabled: true
+# setup.template.name: ${PROJECT_NAME}_v.${PROJECT_VERSION}
+# setup.template.pattern: ${PROJECT_NAME}_v.${PROJECT_VERSION}-*
+# setup.ilm.enabled: false
+
+setup.kibana:
+  host: "http://${ELK_KIBANA_HOST}"
+  username: elastic
+  password: ${ELK_ELASTICSEARCH_PASSWORD}
+
+setup.dashboards.enabled: true
