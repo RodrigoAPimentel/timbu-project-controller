@@ -17,11 +17,6 @@ Conjunto de configurações e ferramentas para Controlar e auxiliar no desenvolv
 
 ---
 
-RodrigoAPimentel
-timbu-project-controller
-
-jabuti-environment-cli
-
 ## **Instalação/Configuração**
 
 ### **- Timbu**
