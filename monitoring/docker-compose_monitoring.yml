@@ -5,7 +5,7 @@ services:
     image: elastic/elasticsearch:${ELK_VERSION}
     container_name: elasticsearch_${PROJECT_NAME}_v.${PROJECT_VERSION}
     restart: unless-stopped
-    env_file: .env
+    env_file: ../.env
     hostname: elasticsearch_${PROJECT_NAME}_v.${PROJECT_VERSION}
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
@@ -23,7 +23,7 @@ services:
   #   image: elastic/logstash:${ELK_VERSION}
   #   container_name: logstash_${PROJECT_NAME}_v.${PROJECT_VERSION}
   #   restart: unless-stopped
-  #   env_file: .env
+  #   env_file: ../.env
   # hostname: logstash_${PROJECT_NAME}_v.${PROJECT_VERSION}
   #   volumes:
   #     - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
@@ -43,7 +43,7 @@ services:
     image: elastic/metricbeat:${ELK_VERSION}
     container_name: metricbeat_${PROJECT_NAME}_v.${PROJECT_VERSION}
     restart: unless-stopped
-    env_file: .env
+    env_file: ../.env
     hostname: metricbeat_${PROJECT_NAME}_v.${PROJECT_VERSION}
     user: root
     logging:
@@ -68,7 +68,7 @@ services:
     image: elastic/filebeat:${ELK_VERSION}
     container_name: filebeat_${PROJECT_NAME}_v.${PROJECT_VERSION}
     restart: unless-stopped
-    env_file: .env
+    env_file: ../.env
     hostname: filebeat_${PROJECT_NAME}_v.${PROJECT_VERSION}
     user: root
     logging:
@@ -90,7 +90,7 @@ services:
   kibana:
     image: elastic/kibana:${ELK_VERSION}
     container_name: kibana_${PROJECT_NAME}_v.${PROJECT_VERSION}
-    env_file: .env
+    env_file: ../.env
     hostname: kibana_${PROJECT_NAME}_v.${PROJECT_VERSION}
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
