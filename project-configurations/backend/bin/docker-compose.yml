@@ -19,6 +19,7 @@ services:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
       - ../:/home/node/app
+      - /var/log/${PROJECT_NAME}/backend:${LOGS_DIR}
     networks:
       - backend
 
