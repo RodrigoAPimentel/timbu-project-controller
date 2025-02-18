@@ -16,10 +16,10 @@ echo -e ">>>>>>>>>>> Executando docker-compose $PARAM1 $COMPOSE_DETACH ..... <<<
 echo -e ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>::<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 echo -e "\n>>>>> Executando [BACKEND] ..."
-sh ../calango-devops-backend/bin/docker-compose.sh $PARAM1 $COMPOSE_DETACH
+sh ../$PROJECT_NAME-backend/bin/docker-compose.sh $PARAM1 $COMPOSE_DETACH
 
 echo -e "\n>>>>> Executando [FRONTEND] ..."
-sh ../calango-devops-frontend/bin/docker-compose.sh $PARAM1 $COMPOSE_DETACH
+sh ../$PROJECT_NAME-frontend/bin/docker-compose.sh $PARAM1 $COMPOSE_DETACH
 
 echo -e "\n>>>>> Executando [TOOLS] ..."
 sh ./tools/docker-compose.sh $PARAM1 $COMPOSE_DETACH
