@@ -14,6 +14,21 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASS}
     networks:
       - project-network
+      
+  mongo-express:
+    image: ${MONGO_EXPRESS_IMAGE}:${MONGO_EXPRESS_VERSION}
+    container_name: mongodb-express
+    restart: always
+    ports:
+      - ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASS}
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASS}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASS}@mongodb:${MONGO_PORT}/
+    networks:
+      - project-network
 
 volumes:
   mongo:
