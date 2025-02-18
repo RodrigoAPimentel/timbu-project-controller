@@ -47,7 +47,7 @@ server {
     location /${NGINX_MONGO_EXPRESS_URL}/ {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_pass http://mongo_express/;
+        proxy_pass http://mongo_express$uri;
     }
 
     # location ~ ^/${ELK_KIBANA_URL}/(.*)$ {
