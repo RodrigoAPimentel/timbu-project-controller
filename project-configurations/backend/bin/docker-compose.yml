@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   backend:
@@ -7,18 +7,18 @@ services:
       dockerfile: bin/Dockerfile
     image: ${BACKEND_NAME}:${BACKEND_VERSION}
     container_name: ${BACKEND_NAME}
-    env_file: .env
+    env_file: ../.env
     restart: always
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:${BACKEND_PORT}']
+      test: ["CMD", "curl", "-f", "http://localhost:${BACKEND_PORT}"]
       interval: 50s
       timeout: 10s
       retries: 3
       start_period: 40s
     ports:
-      - '${BACKEND_PORT}:${BACKEND_PORT}'
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
-      - ../:/home/node/backend
+      - ../:/home/node/app
     networks:
       - backend
 
