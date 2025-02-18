@@ -2,8 +2,12 @@ upstream backend_server {
     server ${NGINX_BACKEND_HOST};
 }
 
-upstream frontend_server {
-    server ${NGINX_FRONTEND_HOST};
+# upstream frontend_server {
+#     server ${NGINX_FRONTEND_HOST};
+# }
+
+upstream mongo_express {
+    server ${NGINX_MONGO_EXPRESS_HOST};
 }
 
 # upstream kibana_server {
@@ -34,11 +38,17 @@ server {
         proxy_pass http://backend_server/;
     }
 
-    location /${NGINX_FRONTEND_URL} {
+    # location /${NGINX_FRONTEND_URL} {
+    #     proxy_set_header Host $host;
+    #     proxy_set_header X-Real-IP $remote_addr;
+    #     proxy_pass http://frontend_server;
+    # }  
+
+    location /${NGINX_MONGO_EXPRESS_URL}/ {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_pass http://frontend_server;
-    }  
+        proxy_pass http://mongo_express/;
+    }
 
     # location ~ ^/${ELK_KIBANA_URL}/(.*)$ {
     #     proxy_set_header Host $host;
