@@ -47,7 +47,7 @@ processors:
 
 filebeat.config.modules:
   path: ${path.config}/modules.d/*.yml
-  eload.period: 10s
+  reload.period: 10s
   reload.enabled: true
 
 output.elasticsearch:
