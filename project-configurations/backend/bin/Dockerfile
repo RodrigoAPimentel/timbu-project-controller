@@ -1,18 +1,18 @@
-FROM node:14.14.0-alpine3.12
+FROM node:23.7.0-alpine3.20
 
 RUN apk add --no-cache bash curl
 
-RUN npm config set cache /home/node/backend/.npm-cache --global
+RUN npm config set cache /home/node/app/.npm-cache --global
 
-RUN npm i -g @nestjs/cli@^7.0.0
+RUN npm i -g @nestjs/cli@^11.0.0
 
-RUN mkdir -p /home/node/backend/node_modules
+RUN mkdir -p /home/node/app/node_modules
 
-WORKDIR /home/node/backend
+WORKDIR /home/node/app
 
-COPY package.json yarn.* ./
+COPY package.json yarn.* tsconfig.* ./
 
-RUN yarn
+RUN yarn --ignore-platform
 
 CMD [ "yarn", "start:dev" ]
 
