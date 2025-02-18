@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   mongodb:
-    image: mongo:${MONGO_VERSION}
+    image: ${MONGO_IMAGE}:${MONGO_VERSION}
     container_name: mongodb_${PROJECT_NAME}_v.${PROJECT_VERSION}
     restart: unless-stopped
     ports:
