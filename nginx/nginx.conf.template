@@ -10,9 +10,13 @@ upstream mongo_express {
     server ${NGINX_MONGO_EXPRESS_HOST};
 }
 
-# upstream kibana_server {
-#     server ${ELK_KIBANA_HOST};
-# }
+upstream kibana_server {
+    server ${ELK_KIBANA_HOST};
+}
+
+upstream elasticsearch_server {
+    server ${ELK_ELASTICSEARCH_HOST};
+}
 
 log_format nginx-log '$remote_addr - $remote_user [$time_local] "$request" '
                      '$status $body_bytes_sent "$http_referer" '
@@ -43,19 +47,25 @@ server {
     #     proxy_set_header X-Real-IP $remote_addr;
     #     proxy_pass http://frontend_server;
     # }  
-
+    
     location /${NGINX_MONGO_EXPRESS_URL}/ {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_pass http://mongo_express$uri;
     }
 
-    # location ~ ^/${ELK_KIBANA_URL}/(.*)$ {
-    #     proxy_set_header Host $host;
-    #     proxy_set_header X-Real-IP $remote_addr;
-    #     rewrite /${ELK_KIBANA_URL}/(.*) /$1 break;
-    #     proxy_pass http://kibana_server;
-    # }
+    location ~ ^/${ELK_KIBANA_URL}/(.*)$ {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        rewrite /${ELK_KIBANA_URL}/(.*) /$1 break;
+        proxy_pass http://kibana_server;
+    }
+
+    location /${ELK_ELASTICSEARCH_URL}/ {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://elasticsearch_server/;
+    }
 
     location = /404.html {
         internal;
