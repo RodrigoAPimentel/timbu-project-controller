@@ -33,8 +33,8 @@ server {
     error_page 404 /404.html;
     error_page 500 502 503 504 /50x.html;
 
-    access_log /var/log/nginx/nginx-access.log nginx-log;
-    error_log /var/log/nginx/nginx-error.log;
+    access_log ${NGINX_LOG_DIR}/nginx-access.log nginx-log;
+    error_log ${NGINX_LOG_DIR}/nginx-error.log;
 
     location /${NGINX_BACKEND_URL}/ {
         proxy_set_header Host $host;
