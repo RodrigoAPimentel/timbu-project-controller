@@ -14,8 +14,8 @@ server {
     root /usr/share/nginx/html;
 
     error_page 404 /404.html;
-    error_page 500 /50x.html;
-    error_page 502 503 504 /503.html;
+    error_page 503 /503.html;
+    error_page 500 502 504 /50x.html;
 
     access_log ${NGINX_LOGS_DIR}/nginx-access.log nginx-log;
     error_log ${NGINX_LOGS_DIR}/nginx-error.log;
@@ -66,9 +66,6 @@ server {
         internal;
     }
 
-    location = /50x.html {
-        internal;
-    }
 
     location = /503.html {
         internal;
@@ -77,6 +74,10 @@ server {
         add_header Content-Type "text/plain; charset=utf-8";
     }
     
+    location = /50x.html {
+        internal;
+    }
+
     location = /${NGINX_STATUS_URL} {
         stub_status on;
         access_log on;
