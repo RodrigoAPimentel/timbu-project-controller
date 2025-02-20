@@ -1,22 +1,5 @@
-upstream backend_server {
-    server ${NGINX_BACKEND_HOST};
-}
-
-# upstream frontend_server {
-#     server ${NGINX_FRONTEND_HOST};
-# }
-
-upstream mongo_express {
-    server ${NGINX_MONGO_EXPRESS_HOST};
-}
-
-upstream kibana_server {
-    server ${ELK_KIBANA_HOST};
-}
-
-upstream elasticsearch_server {
-    server ${ELK_ELASTICSEARCH_HOST};
-}
+# Configura o resolvedor DNS (para ambientes Docker, geralmente 127.0.0.11)
+resolver 127.0.0.11 valid=30s;
 
 log_format nginx-log '$remote_addr - $remote_user [$time_local] "$request" '
                      '$status $body_bytes_sent "$http_referer" '
@@ -31,40 +14,52 @@ server {
     root /usr/share/nginx/html;
 
     error_page 404 /404.html;
-    error_page 500 502 503 504 /50x.html;
+    error_page 500 /50x.html;
+    error_page 502 503 504 /503.html;
 
-    access_log ${NGINX_LOG_DIR}/nginx-access.log nginx-log;
-    error_log ${NGINX_LOG_DIR}/nginx-error.log;
+    access_log ${NGINX_LOGS_DIR}/nginx-access.log nginx-log;
+    error_log ${NGINX_LOGS_DIR}/nginx-error.log;
 
     location /${NGINX_BACKEND_URL}/ {
+        set $_host ${NGINX_BACKEND_HOST};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_pass http://backend_server/;
+        proxy_pass http://$_host/;        
+        proxy_intercept_errors on;
     }
 
-    # location /${NGINX_FRONTEND_URL} {
-    #     proxy_set_header Host $host;
-    #     proxy_set_header X-Real-IP $remote_addr;
-    #     proxy_pass http://frontend_server;
-    # }  
-    
-    location /${NGINX_MONGO_EXPRESS_URL}/ {
+    location /${NGINX_FRONTEND_URL} {
+        set $_host ${NGINX_FRONTEND_HOST};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_pass http://mongo_express$uri;
+        proxy_pass http://$_host;        
+        proxy_intercept_errors on;
+    }  
+    
+    location /${MONGO_EXPRESS_URL}/ {        
+        set $_host ${MONGO_EXPRESS_HOST};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://$_host;
+        proxy_intercept_errors on;
     }
 
     location ~ ^/${ELK_KIBANA_URL}/(.*)$ {
+        set $_host ${ELK_KIBANA_HOST};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         rewrite /${ELK_KIBANA_URL}/(.*) /$1 break;
-        proxy_pass http://kibana_server;
+        proxy_pass http://$_host;
+        proxy_intercept_errors on;
     }
 
+
     location /${ELK_ELASTICSEARCH_URL}/ {
+        set $_host ${ELK_ELASTICSEARCH_HOST};        
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_pass http://elasticsearch_server/;
+        proxy_pass http://$_host/;
+        proxy_intercept_errors on;
     }
 
     location = /404.html {
@@ -73,6 +68,13 @@ server {
 
     location = /50x.html {
         internal;
+    }
+
+    location = /503.html {
+        internal;
+        default_type text/plain;
+        charset utf-8;
+        add_header Content-Type "text/plain; charset=utf-8";
     }
     
     location = /${NGINX_STATUS_URL} {
@@ -87,7 +89,7 @@ server {
     }
 
     ## TESTE
-    location /testing {
+    location /testing/ {
         fastcgi_pass unix:/does/not/exist;
     }
 }
