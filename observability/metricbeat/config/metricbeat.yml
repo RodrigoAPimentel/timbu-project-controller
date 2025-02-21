@@ -1,3 +1,8 @@
+http:
+  enabled: true
+  host: "0.0.0.0"
+  port: ${METRICBEAT_PORT}
+
 metricbeat.config.modules:
   path: ${path.config}/modules.d/*.yml
   reload.period: 10s
@@ -14,7 +19,6 @@ metricbeat.config.modules:
 #              metricsets: ["leader", "self", "store"]
 #              period: 10s
 #              hosts: ["${host}:2379"]
-
 
 output.elasticsearch:
   hosts: ["${ELK_ELASTICSEARCH_HOST}"]

@@ -26,7 +26,7 @@ sh ./tools/docker-compose.sh $PARAM1 $COMPOSE_DETACH
 
 if [[ $PARAM2 == "-m" || $PARAM1 == "down" ]]; then
     echo -e "\n>>>>> Executando [MONITORAMENTO] ..."
-    sh ./monitoring/docker-compose.sh $PARAM1 $COMPOSE_DETACH
+    sh ./observability/docker-compose.sh $PARAM1 $COMPOSE_DETACH
 fi
 
 echo -e "\n>>>>> Executando [NGINX] ..."
