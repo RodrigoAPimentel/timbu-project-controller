@@ -57,6 +57,8 @@ services:
       - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /:/hostfs:ro
+    ports:
+      - ${METRICBEAT_PORT}:${METRICBEAT_PORT}
     command: metricbeat -e -system.hostfs=/hostfs -strict.perms=false
     networks:
       - project-network
@@ -80,6 +82,8 @@ services:
       - ./filebeat/modules.d/:/usr/share/filebeat/modules.d/
       - /var/lib/docker/containers:/usr/share/dockerlogs/data:ro
       - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - ${FILEBEAT_PORT}:${FILEBEAT_PORT}
     command: filebeat -e -strict.perms=false
     networks:
       - project-network
