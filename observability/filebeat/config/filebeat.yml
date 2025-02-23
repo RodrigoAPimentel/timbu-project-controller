@@ -64,6 +64,8 @@ processors:
         }
   - drop_fields:
       fields: ["log.offset"]
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
 
 filebeat.config.modules:
   path: ${path.config}/modules.d/*.yml
@@ -76,8 +78,7 @@ output.elasticsearch:
   password: ${ELK_ELASTICSEARCH_PASSWORD}
   
 logging.level: debug
-# logging.selectors: ["*"]
-logging.selectors: ["multiline"]
+logging.selectors: ["*"]
 logging.to_files: false
 logging.to_syslog: false
 loggins.metrice.enabled: false
