@@ -82,6 +82,7 @@ services:
       - ./filebeat/modules.d/:/usr/share/filebeat/modules.d/
       - /var/lib/docker/containers:/usr/share/dockerlogs/data:ro
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${PROJECT_LOGS_DIR}:/usr/share/filebeat/app-logs
     ports:
       - ${FILEBEAT_PORT}:${FILEBEAT_PORT}
     command: filebeat -e -strict.perms=false
