@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   backend:
@@ -15,19 +15,19 @@ services:
     healthcheck:
       test:
         [
-          'CMD',
-          'curl',
-          '-f',
-          'http://${PROJECT_BACKEND_URL}:${PROJECT_BACKEND_PORT}',
+          "CMD",
+          "curl",
+          "-f",
+          "http://${PROJECT_BACKEND_URL}:${PROJECT_BACKEND_PORT}",
         ]
       interval: 50s
       timeout: 10s
       retries: 3
       start_period: 40s
     ports:
-      - '${PROJECT_BACKEND_PORT}:${PROJECT_BACKEND_PORT}'
+      - "${PROJECT_BACKEND_PORT}:${PROJECT_BACKEND_PORT}"
     environment:
-      - ELASTIC_APM_SERVICE_NAME=${PROJECT_NAME}
+      - ELASTIC_APM_SERVICE_NAME=${PROJECT_BACKEND_NAME}
       - ELASTIC_APM_SERVER_URL=http://${ELK_APM_HOST}
       - ELASTIC_APM_ENVIRONMENT=${NODE_ENV}
       - ELASTIC_APM_LOG_LEVEL=${ELK_APM_LOG_LEVEL}
