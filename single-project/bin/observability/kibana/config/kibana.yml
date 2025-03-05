@@ -1,0 +1,9 @@
+---
+server.port: ${ELK_KIBANA_PORT}
+server.basePath: "/${ELK_KIBANA_URL}"
+server.host: "${ELK_KIBANA_SIMPLE_HOST}"
+server.rewriteBasePath: false
+
+elasticsearch.hosts: [ "http://${ELK_ELASTICSEARCH_HOST}" ]
+
+monitoring.ui.container.elasticsearch.enabled: true

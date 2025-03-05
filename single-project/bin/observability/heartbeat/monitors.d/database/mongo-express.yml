@@ -1,0 +1,20 @@
+- type: http
+  name: "Mongo Express"
+  enabled: true
+  schedule: '@every 10s'
+  urls: 
+    - "http://${MONGO_EXPRESS_HOST}/${MONGO_EXPRESS_URL}"
+  username: "${MONGO_EXPRESS_USERNAME}"
+  password: "${MONGO_EXPRESS_PASSWORD}"
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 10s
+  tags: 
+    - "mongo_express"
+    - "http"
+    - "database"
+  check.request:
+    method: "GET"
+  check.response:
+    status: 200

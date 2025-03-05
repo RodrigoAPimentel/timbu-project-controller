@@ -1,0 +1,9 @@
+- module: nginx
+  metricsets:
+    - stubstatus
+  enabled: true
+  period: 10s
+
+  hosts: ["${NGINX_HOST}"]
+
+  server_status_path: ${NGINX_STATUS_URL}

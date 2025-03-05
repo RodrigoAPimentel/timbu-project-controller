@@ -1,0 +1,18 @@
+- type: http
+  name: "Armadillo Backend"
+  enabled: true
+  schedule: '@every 10s'
+  urls: 
+   - "http://${PROJECT_BACKEND_HOST}"
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 10s
+  check.request:
+    method: "GET"
+  check.response:
+    status: 200
+  tags: 
+    - "backend"
+    - "http"
+    - "app"

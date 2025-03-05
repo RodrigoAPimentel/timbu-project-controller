@@ -1,0 +1,182 @@
+version: '3.7'
+
+services:
+  elasticsearch:
+    image: ${ELK_ELASTICSEARCH_IMAGE}:${ELK_ELASTICSEARCH_VERSION}
+    container_name: ${DOCKER_CONTAINER_PREFIX_NAME}_${ELK_ELASTICSEARCH_SERVICE_NAME}
+    restart: unless-stopped
+    env_file: .env
+    hostname: ${ELK_ELASTICSEARCH_SERVICE_NAME}_${PROJECT_NAME}
+    volumes:
+      - ${SERVICE_FOLDER_PATH}/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - elasticsearch:/usr/share/elasticsearch/data
+    ports:
+      - ${ELK_ELASTICSEARCH_PORT1}:${ELK_ELASTICSEARCH_PORT1}
+      - ${ELK_ELASTICSEARCH_PORT2}:${ELK_ELASTICSEARCH_PORT2}
+    environment:
+      ES_JAVA_OPTS: '-Xmx256m -Xms256m'
+      ELASTIC_PASSWORD: ${ELK_ELASTICSEARCH_PASSWORD}
+    networks:
+      - project-network
+    healthcheck:
+      interval: 25s
+      retries: 15
+      test: curl -s http://${ELK_ELASTICSEARCH_HOST}/_cluster/health | grep -vq '"status":"red"'
+
+  kibana:
+    image: ${ELK_KIBANA_IMAGE}:${ELK_KIBANA_VERSION}
+    container_name: ${DOCKER_CONTAINER_PREFIX_NAME}_${ELK_KIBANA_SERVICE_NAME}
+    env_file: .env
+    hostname: ${ELK_KIBANA_SERVICE_NAME}_${PROJECT_NAME}
+    volumes:
+      - ${SERVICE_FOLDER_PATH}/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - ${ELK_KIBANA_PORT}:${ELK_KIBANA_PORT}
+    networks:
+      - project-network
+    healthcheck:
+      start_period: 1m
+      interval: 10s
+      retries: 20
+      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://${ELK_KIBANA_HOST}/api/status
+
+  metricbeat:
+    image: ${ELK_METRICBEAT_IMAGE}:${ELK_METRICBEAT_VERSION}
+    container_name: ${DOCKER_CONTAINER_PREFIX_NAME}_${ELK_METRICBEAT_SERVICE_NAME}
+    restart: unless-stopped
+    env_file: .env
+    hostname: ${ELK_METRICBEAT_SERVICE_NAME}_${PROJECT_NAME}
+    user: root
+    logging:
+      options:
+        max-file: '3'
+        max-size: '50m'
+    volumes:
+      - ${SERVICE_FOLDER_PATH}/metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - ${SERVICE_FOLDER_PATH}/metricbeat/modules.d/:/usr/share/metricbeat/modules.d/
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /:/hostfs:ro
+    ports:
+      - ${ELK_METRICBEAT_PORT}:${ELK_METRICBEAT_PORT}
+    networks:
+      - project-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    healthcheck:
+      test: metricbeat test config
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
+  filebeat:
+    image: ${ELK_FILEBEAT_IMAGE}:${ELK_FILEBEAT_VERSION}
+    container_name: ${DOCKER_CONTAINER_PREFIX_NAME}_${ELK_FILEBEAT_SERVICE_NAME}
+    restart: unless-stopped
+    env_file: .env
+    hostname: ${ELK_FILEBEAT_SERVICE_NAME}_${PROJECT_NAME}
+    user: root
+    logging:
+      options:
+        max-file: '3'
+        max-size: '50m'
+    volumes:
+      - ${SERVICE_FOLDER_PATH}/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ${SERVICE_FOLDER_PATH}/filebeat/modules.d/:/usr/share/filebeat/modules.d/
+      - /var/lib/docker/containers:/usr/share/dockerlogs/:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PROJECT_LOGS_DIR}:/usr/share/filebeat/app-logs
+      - /var/log/nginx/:/usr/share/filebeat/nginx-logs
+    ports:
+      - ${ELK_FILEBEAT_PORT}:${ELK_FILEBEAT_PORT}
+    networks:
+      - project-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    healthcheck:
+      test: filebeat test config
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
+  apm-server:
+    image: ${ELK_APM_IMAGE}:${ELK_APM_VERSION}
+    container_name: ${DOCKER_CONTAINER_PREFIX_NAME}_${ELK_APM_SERVICE_NAME}
+    restart: unless-stopped
+    env_file: .env
+    hostname: ${ELK_APM_SERVICE_NAME}_${PROJECT_NAME}
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    cap_drop:
+      - ALL
+    ports:
+      - ${ELK_APM_PORT}:${ELK_APM_PORT}
+      - ${ELK_APM_PORT2}:${ELK_APM_PORT2}/udp
+    command: >
+      apm-server -e
+        -E apm-server.rum.enabled=true
+        -E setup.kibana.host=${ELK_KIBANA_HOST}
+        -E setup.template.settings.index.number_of_replicas=0
+        -E apm-server.kibana.enabled=true
+        -E apm-server.kibana.host=${ELK_KIBANA_HOST}
+        -E output.elasticsearch.hosts=["${ELK_ELASTICSEARCH_HOST}"]
+    networks:
+      - project-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 1m
+      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://${ELK_APM_HOST}/
+
+  heartbeat:
+    image: ${ELK_HEARTBEAT_IMAGE}:${ELK_HEARTBEAT_VERSION}
+    container_name: ${DOCKER_CONTAINER_PREFIX_NAME}_${ELK_HEARTBEAT_SERVICE_NAME}
+    restart: always
+    env_file: .env
+    hostname: ${ELK_HEARTBEAT_SERVICE_NAME}_${PROJECT_NAME}
+    user: root
+    logging:
+      options:
+        max-file: '3'
+        max-size: '50m'
+    volumes:
+      - ${SERVICE_FOLDER_PATH}/heartbeat/config/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml
+      - ${SERVICE_FOLDER_PATH}/heartbeat/monitors.d/:/usr/share/heartbeat/monitors.d/
+    ports:
+      - ${ELK_HEARTBEAT_PORT}:${ELK_HEARTBEAT_PORT}
+    networks:
+      - project-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    healthcheck:
+      test: heartbeat test config
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
+volumes:
+  elasticsearch:
+    name: elasticsearch
+
+networks:
+  project-network:
+    name: ${PROJECT_NAME}
+    driver: bridge

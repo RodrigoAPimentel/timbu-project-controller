@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ${SERVICE_FOLDER_PATH}/Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV}
+        - BASE_IMAGE=${PROJECT_BACKEND_DOCKERFILE_BASE_IMAGE}
+    image: ${PROJECT_BACKEND_NAME}:${PROJECT_BACKEND_VERSION}
+    container_name: ${DOCKER_CONTAINER_PREFIX_NAME}
+    env_file: .env
+    restart: always
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://${PROJECT_BACKEND_URL}:${PROJECT_BACKEND_PORT}',
+        ]
+      interval: 50s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - '${PROJECT_BACKEND_PORT}:${PROJECT_BACKEND_PORT}'
+    environment:
+      - ELASTIC_APM_SERVICE_NAME=${PROJECT_NAME}
+      - ELASTIC_APM_SERVER_URL=http://${ELK_APM_HOST}
+      - ELASTIC_APM_ENVIRONMENT=${NODE_ENV}
+      - ELASTIC_APM_LOG_LEVEL=${ELK_APM_LOG_LEVEL}
+    volumes:
+      - .:/home/node/app
+      - ${PROJECT_BACKEND_LOGS_DIR}:${PROJECT_BACKEND_LOGS_DIR}
+    networks:
+      - project-network
+
+networks:
+  project-network:
+    name: ${PROJECT_NAME}
+    driver: bridge

@@ -1,0 +1,17 @@
+http:
+  enabled: true
+  host: "0.0.0.0"
+  port: ${ELK_METRICBEAT_PORT}
+
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.period: 10s
+  reload.enabled: true
+
+output.elasticsearch:
+  hosts: ["${ELK_ELASTICSEARCH_HOST}"]
+  
+setup.kibana:
+  host: "http://${ELK_KIBANA_HOST}"
+
+setup.dashboards.enabled: true

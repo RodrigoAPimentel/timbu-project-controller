@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  nginx:
+    image: ${NGINX_IMAGE}:${NGINX_VERSION}
+    container_name: ${DOCKER_CONTAINER_PREFIX_NAME}_${NGINX_SERVICE_NAME}
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
+      - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
+    volumes:
+      - /var/log/nginx:/var/log/nginx
+      - ${SERVICE_FOLDER_PATH}/nginx.conf.template:/etc/nginx/templates/nginx.conf.template
+      - ${SERVICE_FOLDER_PATH}/error_pages:/usr/share/nginx/html
+    networks:
+      - project-network
+networks:
+  project-network:
+    name: ${PROJECT_NAME}
+    driver: bridge

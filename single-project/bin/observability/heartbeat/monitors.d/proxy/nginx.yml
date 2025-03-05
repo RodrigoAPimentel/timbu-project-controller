@@ -1,0 +1,14 @@
+- type: icmp
+  name: "Nginx Proxy Service"
+  schedule: '@every 10s'
+  hosts: 
+    - "${NGINX_SERVICE_NAME}"
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 16s
+  wait: 1s
+  tags: 
+    - "nginx"
+    - "icmp"
+    - "proxy"

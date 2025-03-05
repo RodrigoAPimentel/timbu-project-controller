@@ -1,0 +1,57 @@
+http:
+  enabled: true
+  host: "0.0.0.0"
+  port: ${ELK_FILEBEAT_PORT}
+
+filebeat.inputs:
+  - type: container
+    combine_partial: true
+    paths:
+      - /usr/share/dockerlogs/**/*.log
+    exclude_files: ['\.gz$']
+    ignore_older: 10m
+  - type: filestream
+    id: filestream-nginx-logs
+    enabled: true
+    paths:
+      - /usr/share/filebeat/nginx-logs/*.log
+  - type: filestream
+    id: filestream-app-logs
+    enabled: true
+    paths:
+      - /usr/share/filebeat/app-logs/**/*.log
+
+processors:
+  - script:
+      lang: javascript
+      source: >
+        function process(event) {
+          var msg = event.Get("message");
+          if (msg) {
+            // Remove códigos ANSI (sequências de escape para cores)
+            event.Put("message", msg.replace(/\x1b\[[0-9;]*m/g, ""));
+          }
+        }
+  - drop_fields:
+      fields: ["log.offset"]
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+
+output.elasticsearch:
+  hosts: ["${ELK_ELASTICSEARCH_HOST}"]
+
+logging.level: debug
+logging.selectors: ["*"]
+logging.to_files: false
+logging.to_syslog: false
+logging.metrics.enabled: false
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+ssl.verification_mode: none
+
+setup.kibana:
+  host: "http://${ELK_KIBANA_HOST}"

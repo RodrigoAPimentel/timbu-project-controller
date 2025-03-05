@@ -1,0 +1,98 @@
+# Configura o resolvedor DNS (para ambientes Docker, geralmente 127.0.0.11)
+resolver 127.0.0.11 valid=30s;
+
+log_format nginx-log '$remote_addr - $remote_user [$time_local] "$request" '
+                     '$status $body_bytes_sent "$http_referer" '
+                     '"$http_user_agent" "$http_x_forwarded_for"';
+
+server {
+    listen ${NGINX_HTTP_PORT} default_server;
+    listen [::]:${NGINX_HTTP_PORT} default_server;
+
+    server_name ${NGINX_SERVER_NAME};
+
+    root /usr/share/nginx/html;
+
+    error_page 404 /404.html;
+    error_page 503 /503.html;
+    error_page 500 502 504 /50x.html;
+
+    access_log ${NGINX_LOGS_DIR}/nginx-access.log nginx-log;
+    error_log ${NGINX_LOGS_DIR}/nginx-error.log;
+
+    location /${PROJECT_BACKEND_STATUS_URL}/ {
+        set $_host ${PROJECT_BACKEND_HOST};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://$_host/;        
+        proxy_intercept_errors on;
+    }
+
+    location /${PROJECT_FRONTEND_URL} {
+        set $_host ${PROJECT_FRONTEND_HOST};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://$_host;        
+        proxy_intercept_errors on;
+    }  
+    
+    location /${MONGO_EXPRESS_URL}/ {        
+        set $_host ${MONGO_EXPRESS_HOST};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://$_host;
+        proxy_intercept_errors on;
+    }
+
+    location ~ ^/${ELK_KIBANA_URL}/(.*)$ {
+        set $_host ${ELK_KIBANA_HOST};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        rewrite /${ELK_KIBANA_URL}/(.*) /$1 break;
+        proxy_pass http://$_host;
+        proxy_intercept_errors on;
+    }
+
+
+    location /${ELK_ELASTICSEARCH_URL}/ {
+        set $_host ${ELK_ELASTICSEARCH_HOST};        
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://$_host/;
+        proxy_intercept_errors on;
+    }
+
+    location /srv-mongo {
+        set $_host ${MONGO_HOST};
+        proxy_pass http://$host;
+        proxy_intercept_errors on;
+    }
+
+    location = /404.html {
+        internal;
+    }
+
+
+    location = /503.html {
+        internal;
+        default_type text/plain;
+        charset utf-8;
+        add_header Content-Type "text/plain; charset=utf-8";
+    }
+    
+    location = /50x.html {
+        internal;
+    }
+
+    location = /${NGINX_STATUS_URL} {
+        stub_status on;
+        access_log on;
+        allow all;
+        deny all;
+    }
+
+    ## TESTE
+    location /testing/ {
+        fastcgi_pass unix:/does/not/exist;
+    }
+}

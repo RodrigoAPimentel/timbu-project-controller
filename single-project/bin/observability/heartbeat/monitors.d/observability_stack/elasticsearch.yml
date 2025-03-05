@@ -1,0 +1,15 @@
+- type: icmp
+  name: "Elasticsearch"
+  schedule: '@every 10s'
+  hosts: 
+    - "${ELK_ELASTICSEARCH_SERVICE_NAME}"
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 16s
+  wait: 1s
+  tags: 
+    - "elasticsearch"
+    - "elasticsearch"
+    - "icmp"
+    - "observability"
